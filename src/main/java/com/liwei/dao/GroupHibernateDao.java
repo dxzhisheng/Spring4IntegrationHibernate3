@@ -31,8 +31,11 @@ public class GroupHibernateDao {
 
     public void groupAdd(Group group){
         getSession().save(group);
-        System.out.println(group.getId());
+    }
 
+
+    public Group load(Integer id){
+        return (Group) getSession().get(Group.class,id);
     }
 
 }

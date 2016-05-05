@@ -33,4 +33,10 @@ public class HibernateSpringTest {
         userHibernateDao.add(user);
     }
 
+    @Test
+    public void testLoad(){
+        Group group = groupHibernateDao.load(1);
+        System.out.println(group);
+    }
+
 }
