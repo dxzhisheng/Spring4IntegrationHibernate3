@@ -1,5 +1,6 @@
 package com.liwei.dao;
 
+import com.liwei.model.User;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class UserHibernateDao {
     }
 
 
+    public void add(User user){
+        getSession().save(user);
+    }
 
 
 }
