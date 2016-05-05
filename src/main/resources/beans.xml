@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+
+    <context:component-scan base-package="com.liwei.dao"/>
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="close">
+        <property name="username" value="root"></property>
+        <property name="password" value="123456"></property>
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306/spring_hibernate"></property>
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+    </bean>
+
+    <!--创建 Spring 的 SessionFactory 工厂  -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <!-- 注入数据源 -->
+        <property name="dataSource" ref="dataSource"></property>
+        <!-- 设置 Spring 去哪个包中查找相应的实体类 -->
+        <property name="packagesToScan">
+            <value>com.liwei.model</value>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <prop key="hibernate.format_sql">false</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- 以下的这段是模板代码，写一百遍也是这样，所以不用记住，但是一定要理解 -->
+
+    <!-- 配置Spring的事务处理 -->
+    <!-- 创建事务管理器-->
+    <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!-- 配置 AOP ，Spring 是通过 AOP 来进行事务管理的 -->
+    <aop:config>
+        <!-- 设置 pointCut 表示哪些方法要加入事务处理 -->
+        <aop:pointcut id="allMethods" expression="execution(* com.liwei.dao.*.*(..))"/>
+        <!-- 通过 advisor 来确定具体要加入事务控制的方法 -->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="allMethods"/>
+    </aop:config>
+
+    <!-- 配置哪些方法要加入事务控制 -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <!-- 让所有的方法都加入事务管理 -->
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+
+</beans>
