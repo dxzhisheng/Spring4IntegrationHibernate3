@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.liwei.hibernate.spring</groupId>
-    <artifactId>HibernateSpring</artifactId>
+    <artifactId>Spring4IntegrationHibernate3</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -24,7 +24,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Spring start-->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
@@ -55,7 +54,6 @@
             <artifactId>spring-tx</artifactId>
             <version>${spring.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
@@ -79,20 +77,19 @@
             <artifactId>druid</artifactId>
             <version>1.0.18</version>
         </dependency>
+
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
             <version>3.20.0-GA</version>
         </dependency>
+
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>1.8.7</version>
         </dependency>
-
-
     </dependencies>
-
 
     <build>
         <plugins>

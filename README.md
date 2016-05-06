@@ -1,12 +1,16 @@
-# Spring4 整合 Hibernate3
+# Spring4 整合 Hibernate3 基本使用（通过注入 SessionFactory）
 [TOC]
 
 ## 步骤 1 ：导入 maven 依赖
 1、Spring4 的模块
 spring-core、spring-context、spring-beans、spring-jdbc、spring-orm、spring-tx、spring-test
+具体的 maven 配置，可以到 Maven Repository: Search/Browse/Explore  http://mvnrepository.com/ 中查询，这里为了节约篇幅就不粘贴出来了。
+
 2、mysql 驱动
 mysql-connector-java
+
 3、hibernate3
+这一节我们集成 Hibernate3，我们将在将来的文章中介绍如何集成 Hibernate4。 
 ```
 <dependency>
     <groupId>org.hibernate</groupId>
@@ -14,9 +18,12 @@ mysql-connector-java
     <version>3.6.10.Final</version>
 </dependency>
 ```
+
 4、Druid 数据源
 druid
+
 5、javassist
+这是 Hibernate 的依赖包。
 ```
 <dependency>
     <groupId>org.javassist</groupId>
@@ -25,6 +32,7 @@ druid
 </dependency>
 ```
 6、aspectjweaver
+（Spring AOP 依赖）
 ```
 <dependency>
     <groupId>org.aspectj</groupId>
@@ -49,6 +57,9 @@ druid
 ```
 
 2、配置 SessionFactory
+
+创建 Spring 的 `SessionFactory` 工厂 ，如果使用的是 Annotation 的方式，不能使用 `LocalSessionFactoryBean` ，而应该使用 `org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean` 。
+
 ```
 <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
     <property name="dataSource" ref="dataSource"></property>
@@ -66,9 +77,11 @@ druid
 </bean>
 ```
 注意：我们集成 Hibernate3 使用的类是 `org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean`。
+
 3、配置和事务相关
 配置 Spring 事务处理，**只有配置了事务处理之后， Spring 才能有效的管理事务**。
 （1）配置事务管理器
+注意： 注意，这里要根据不同的持久化框架选择不同的事务管理器 。
 ```
 <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
     <property name="sessionFactory" ref="sessionFactory"/>
@@ -96,7 +109,7 @@ druid
 为实体类添加 Hibernate 的 Annotation 或者 hbm 文件。
 并且添加标准化的 JPA 注解。
 ```
-@Table(name = "t_group")
+Table(name = "t_group")
 @Entity
 public class Group {
     private Integer id;
@@ -174,10 +187,81 @@ public class HibernateSpringTest {
     @Test
     public void testAdd() {
         Group group = new Group();
-        group.setName("人事处");
+        group.setName("技术研发部");
         groupHibernateDao.groupAdd(group);
-
+        User user =new User("liwei","123456","李威威");
+        user.setGroup(group);
+        userHibernateDao.add(user);
     }
 
 }
+```
+
+
+## 进一步研究
+我们需要把 DAO 层抽象成接口，这样我们可以添加不同的实现。
+```
+public interface IGroupDao {
+
+    public void add(Group group);
+
+    public Group load(int id);
+}
+```
+
+```
+public interface IUserDao {
+    
+    public void add(User user);
+    public void update(User user);
+    public void delete(User user);
+    public User load(int id);
+    public List<User> list(String hql, Object[] params);
+    
+}
+```
+
+此时实现类的声明部分变为：
+```
+@Repository(value="groupHibernateDao")
+public class GroupHibernateDao implements IGroupDao{
+```
+
+```
+@Repository
+public class UserHibernateDao implements IUserDao{
+```
+
+上面我们指出了每一个 DAO 层都要注入 `SessionFactory`，我们可以写一个基类 `BaseDao` 完成依赖注入。
+```
+public class BaseDao {
+
+    private SessionFactory sessionFactory;
+
+    public SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
+
+    @Autowired
+    public void setSessionFactory(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
+    // 获取 Session，注意：没有使用 openSession() ,使用 getCurrentSession()才能被 Spring 管理
+    public Session getSession(){
+        return sessionFactory.getCurrentSession();
+    }
+
+}
+```
+
+此时实现类的声明部分变为：
+```
+@Repository(value="groupHibernateDao")
+public class GroupHibernateDao extends BaseDao implements IGroupDao{
+```
+```
+@Repository
+public class UserHibernateDao extends BaseDao implements IUserDao{
+
 ```

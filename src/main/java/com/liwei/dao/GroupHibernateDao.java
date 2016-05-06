@@ -10,32 +10,21 @@ import org.springframework.stereotype.Repository;
  * Created by Liwei on 2016/5/5.
  */
 @Repository(value="groupHibernateDao")
-public class GroupHibernateDao {
-
-
-    private SessionFactory sessionFactory;
-
-    public SessionFactory getSessionFactory() {
-        return sessionFactory;
+public class GroupHibernateDao extends BaseDao implements IGroupDao{
+    @Override
+    public void add(Group group) {
+        this.getSession().save(group);
     }
 
-    @Autowired
-    public void setSessionFactory(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
-
-    public Session getSession(){
-        return sessionFactory.getCurrentSession();
+    @Override
+    public Group load(int id) {
+        return (Group) this.getSession().get(Group.class,id);
     }
 
 
-    public void groupAdd(Group group){
-        getSession().save(group);
-    }
 
 
-    public Group load(Integer id){
-        return (Group) getSession().get(Group.class,id);
-    }
+
+
 
 }
